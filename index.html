@@ -63,6 +63,8 @@
     <h1 id="appTitle">CG Bienes Raíces · Clientes</h1>
     <div class="lang"><button id="langEs" class="on">ES</button><button id="langEn">EN</button></div>
     <button class="btn ghost" id="btnCsv">⤓ CSV</button>
+    <button class="btn ghost" id="btnImport">⤒ CSV</button>
+    <input type="file" id="fileCsv" accept=".csv,text/csv" style="display:none">
     <button class="btn primary" id="btnAdd">＋ <span id="addLbl">Cliente</span></button>
   </div>
 </header>
@@ -226,6 +228,49 @@ document.getElementById("btnDel").addEventListener("click", ()=>{
   const id = document.getElementById("fId").value;
   if(id && confirm(t("confirmDel"))){ S.clients = S.clients.filter(x=>x.id!==id); save(); closeForm(); render(); }
 });
+document.getElementById("btnImport").addEventListener("click", ()=>document.getElementById("fileCsv").click());
+document.getElementById("fileCsv").addEventListener("change", e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    const rows = parseCSV(String(r.result||""));
+    if(rows.length<2){ e.target.value=""; return; }
+    const head = rows[0].map(h=>h.trim().toLowerCase());
+    const col = n=>head.indexOf(n);
+    const iName=col("name"), iPhone=col("phone"), iEmail=col("email"), iProp=col("property"),
+          iStage=col("stage"), iVal=col("value_mxn"), iNotes=col("notes"), iAdded=col("added");
+    const stageMap = {};
+    ["es","en"].forEach(L=>{ const d=I18N[L].stages; Object.keys(d).forEach(k=>{ stageMap[d[k].toLowerCase()]=k; }); });
+    for(let i=1;i<rows.length;i++){
+      const c=rows[i]; if(!c.length||!c.join("").trim()) continue;
+      const stRaw=String(c[iStage]||"").trim().toLowerCase();
+      S.clients.unshift({
+        id:uid(),
+        name:c[iName]||"", phone:c[iPhone]||"", email:c[iEmail]||"", prop:c[iProp]||"",
+        stage:stageMap[stRaw]||"lead",
+        value:parseFloat(c[iVal])||0,
+        notes:c[iNotes]||"",
+        added:String(c[iAdded]||"").slice(0,10)||new Date().toISOString().slice(0,10)
+      });
+    }
+    save(); render(); e.target.value="";
+  };
+  r.readAsText(f,"utf-8");
+});
+function parseCSV(s){
+  s = s.replace(/^\ufeff/,"");
+  const rows=[]; let row=[], cur="", q=false;
+  for(let i=0;i<s.length;i++){
+    const ch=s[i];
+    if(q){ if(ch==='"'){ if(s[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===","){ row.push(cur); cur=""; }
+    else if(ch==="\n"||ch==="\r"){ if(ch==="\r"&&s[i+1]==="\n") i++; row.push(cur); rows.push(row); row=[]; cur=""; }
+    else cur+=ch;
+  }
+  if(cur!==""||row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
 document.getElementById("btnCsv").addEventListener("click", ()=>{
   const head = ["name","phone","email","property","stage","value_mxn","notes","added"];
   const q2 = v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
