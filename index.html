@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CG Bienes Raíces — Clientes</title>
+<style>
+  :root { --bg:#f4f6f8; --card:#fff; --ink:#1c2430; --muted:#6b7686; --line:#e3e8ee;
+          --blue:#1f6feb; --green:#1a7f37; --red:#cf222e; --amber:#9a6700; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+         background:var(--bg); color:var(--ink); }
+  header { background:#14202e; color:#fff; padding:12px 16px; position:sticky; top:0; z-index:10; }
+  header .row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; flex:1; min-width:140px; }
+  .btn { border:0; border-radius:8px; padding:9px 14px; font-size:14px; font-weight:600; cursor:pointer; }
+  .btn.primary { background:var(--blue); color:#fff; }
+  .btn.ghost { background:#26313f; color:#fff; }
+  .btn.danger { background:var(--red); color:#fff; }
+  .btn.small { padding:6px 10px; font-size:13px; }
+  .lang { display:flex; border:1px solid #3b4a5e; border-radius:8px; overflow:hidden; }
+  .lang button { background:transparent; color:#cfd8e3; border:0; padding:8px 12px; font-size:13px; font-weight:700; cursor:pointer; }
+  .lang button.on { background:var(--blue); color:#fff; }
+  .stats { display:flex; gap:8px; padding:12px 16px 0; flex-wrap:wrap; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 14px; flex:1; min-width:120px; }
+  .stat .k { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .stat .v { font-size:19px; font-weight:700; margin-top:2px; }
+  .tools { display:flex; gap:8px; padding:12px 16px 0; flex-wrap:wrap; }
+  .tools input, .tools select { flex:1; min-width:140px; padding:10px 12px; font-size:15px; border:1px solid var(--line);
+      border-radius:8px; background:#fff; }
+  .board { display:flex; gap:10px; padding:14px 16px 40px; overflow-x:auto; align-items:flex-start; min-height:60vh; }
+  .col { background:#eef1f5; border-radius:12px; min-width:262px; max-width:262px; padding:10px; flex-shrink:0; }
+  .col h2 { font-size:13px; margin:2px 4px 8px; display:flex; justify-content:space-between; align-items:center; }
+  .col h2 .n { background:#d5dbe3; border-radius:10px; padding:1px 8px; font-size:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--blue); border-radius:10px;
+          padding:10px 12px; margin-bottom:8px; cursor:pointer; }
+  .card:active { transform:scale(.99); }
+  .card .nm { font-weight:700; font-size:15px; }
+  .card .pr { font-size:13px; color:var(--muted); margin-top:2px; }
+  .card .vl { font-size:14px; font-weight:700; color:var(--green); margin-top:4px; }
+  .card .ph { font-size:13px; margin-top:2px; }
+  .card .ph a { color:var(--blue); text-decoration:none; }
+  .empty { color:var(--muted); font-size:13px; text-align:center; padding:14px 4px; }
+  /* modal */
+  .scrim { position:fixed; inset:0; background:rgba(10,15,22,.55); display:none; z-index:20;
+           align-items:flex-end; justify-content:center; }
+  .scrim.open { display:flex; }
+  .sheet { background:#fff; width:100%; max-width:520px; border-radius:16px 16px 0 0; padding:18px 18px 26px;
+           max-height:92vh; overflow-y:auto; }
+  .sheet h2 { margin:0 0 12px; font-size:18px; }
+  .sheet label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; text-transform:uppercase; letter-spacing:.4px; }
+  .sheet input, .sheet select, .sheet textarea { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line);
+      border-radius:8px; background:#fff; }
+  .sheet textarea { min-height:70px; resize:vertical; }
+  .sheet .actions { display:flex; gap:8px; margin-top:18px; }
+  .sheet .actions .btn { flex:1; padding:13px; font-size:16px; }
+  @media (min-width:700px){ .scrim{ align-items:center; } .sheet{ border-radius:16px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <h1 id="appTitle">CG Bienes Raíces · Clientes</h1>
+    <div class="lang"><button id="langEs" class="on">ES</button><button id="langEn">EN</button></div>
+    <button class="btn ghost" id="btnCsv">⤓ CSV</button>
+    <button class="btn primary" id="btnAdd">＋ <span id="addLbl">Cliente</span></button>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="k" id="stClientsK">Clientes</div><div class="v" id="stClients">0</div></div>
+  <div class="stat"><div class="k" id="stPipeK">En pipeline</div><div class="v" id="stPipe">$0</div></div>
+  <div class="stat"><div class="k" id="stWonK">Ganados</div><div class="v" id="stWon">$0</div></div>
+</div>
+
+<div class="tools">
+  <input id="q" type="search" placeholder="Buscar…">
+  <select id="fStage"><option value="">Todas las etapas</option></select>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="scrim" id="scrim">
+  <div class="sheet">
+    <h2 id="formTitle">Nuevo cliente</h2>
+    <input type="hidden" id="fId">
+    <label id="lName">Nombre</label><input id="fName" autocomplete="off">
+    <label id="lPhone">Teléfono</label><input id="fPhone" inputmode="tel" autocomplete="off">
+    <label id="lEmail">Email</label><input id="fEmail" inputmode="email" autocomplete="off">
+    <label id="lProp">Propiedad de interés</label><input id="fProp" autocomplete="off">
+    <label id="lStage">Etapa</label><select id="fStage2"></select>
+    <label id="lValue">Valor de la operación (MXN)</label><input id="fValue" inputmode="decimal" placeholder="0">
+    <label id="lNotes">Notas</label><textarea id="fNotes"></textarea>
+    <div class="actions">
+      <button class="btn danger" id="btnDel" style="display:none">✕</button>
+      <button class="btn ghost" id="btnCancel" style="color:#1c2430;background:#eef1f5">Cancelar</button>
+      <button class="btn primary" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const LS_KEY = "cg_clientes_v1";
+const STAGES = ["lead","discovery","proposal","active","won","lost","paused"];
+const STAGE_COLOR = {lead:"#1f6feb",discovery:"#8250df",proposal:"#bf8700",active:"#1a7f37",won:"#0a5c36",lost:"#cf222e",paused:"#6b7686"};
+const I18N = {
+es:{title:"CG Bienes Raíces · Clientes",add:"Cliente",clients:"Clientes",pipe:"En pipeline",won:"Ganados",
+    search:"Buscar…",allStages:"Todas las etapas",newClient:"Nuevo cliente",editClient:"Editar cliente",
+    name:"Nombre",phone:"Teléfono",email:"Email",prop:"Propiedad de interés",stage:"Etapa",value:"Valor de la operación (MXN)",
+    notes:"Notas",cancel:"Cancelar",save:"Guardar",del:"✕",confirmDel:"¿Eliminar este cliente?",
+    stages:{lead:"Lead",discovery:"Discovery Call",proposal:"Proposal Sent",active:"Active",won:"Closed Won",lost:"Closed Lost",paused:"Paused"},
+    noResults:"Sin clientes aquí todavía."},
+en:{title:"CG Bienes Raíces · Clients",add:"Client",clients:"Clients",pipe:"In pipeline",won:"Won",
+    search:"Search…",allStages:"All stages",newClient:"New client",editClient:"Edit client",
+    name:"Name",phone:"Phone",email:"Email",prop:"Property of interest",stage:"Stage",value:"Deal value (MXN)",
+    notes:"Notes",cancel:"Cancel",save:"Save",del:"✕",confirmDel:"Delete this client?",
+    stages:{lead:"Lead",discovery:"Discovery Call Booked",proposal:"Proposal Sent",active:"Active",won:"Closed Won",lost:"Closed Lost",paused:"Paused"},
+    noResults:"No clients here yet."}};
+let S = {clients:[], lang:"es"};
+function t(k){ return I18N[S.lang][k]; }
+function stageName(s){ return I18N[S.lang].stages[s] || s; }
+function mxn(n){ n = Number(n)||0; return n.toLocaleString("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0}); }
+function load(){ try{ const raw = localStorage.getItem(LS_KEY); if(raw){ S = Object.assign(S, JSON.parse(raw)); } }catch(e){} }
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+function uid(){ return "c"+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function applyLang(){
+  document.documentElement.lang = S.lang;
+  document.getElementById("appTitle").textContent = t("title");
+  document.getElementById("addLbl").textContent = t("add");
+  document.getElementById("stClientsK").textContent = t("clients");
+  document.getElementById("stPipeK").textContent = t("pipe");
+  document.getElementById("stWonK").textContent = t("won");
+  document.getElementById("q").placeholder = t("search");
+  document.getElementById("langEs").classList.toggle("on", S.lang==="es");
+  document.getElementById("langEn").classList.toggle("on", S.lang==="en");
+  const fs = document.getElementById("fStage");
+  fs.innerHTML = '<option value="">'+esc(t("allStages"))+'</option>' +
+    STAGES.map(s=>'<option value="'+s+'">'+esc(stageName(s))+'</option>').join("");
+  const fs2 = document.getElementById("fStage2");
+  fs2.innerHTML = STAGES.map(s=>'<option value="'+s+'">'+esc(stageName(s))+'</option>').join("");
+  document.getElementById("lName").textContent = t("name");
+  document.getElementById("lPhone").textContent = t("phone");
+  document.getElementById("lEmail").textContent = t("email");
+  document.getElementById("lProp").textContent = t("prop");
+  document.getElementById("lStage").textContent = t("stage");
+  document.getElementById("lValue").textContent = t("value");
+  document.getElementById("lNotes").textContent = t("notes");
+  document.getElementById("btnCancel").textContent = t("cancel");
+  document.getElementById("btnSave").textContent = t("save");
+}
+
+function render(){
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const fs = document.getElementById("fStage").value;
+  const OPEN = ["lead","discovery","proposal","active","paused"];
+  let pipe = 0, won = 0;
+  S.clients.forEach(c=>{ const v = Number(c.value)||0;
+    if(c.stage==="won") won += v; else if(OPEN.includes(c.stage)) pipe += v; });
+  document.getElementById("stClients").textContent = S.clients.length;
+  document.getElementById("stPipe").textContent = mxn(pipe);
+  document.getElementById("stWon").textContent = mxn(won);
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  STAGES.forEach(st=>{
+    if(fs && fs!==st) return;
+    const list = S.clients.filter(c=>c.stage===st).filter(c=>{
+      if(!q) return true;
+      return [c.name,c.phone,c.email,c.prop,c.notes].join(" ").toLowerCase().includes(q);
+    });
+    const col = document.createElement("div"); col.className = "col";
+    col.innerHTML = '<h2><span style="border-left:5px solid '+STAGE_COLOR[st]+';padding-left:7px">'+esc(stageName(st))+'</span><span class="n">'+list.length+'</span></h2>';
+    if(!list.length){ const e=document.createElement("div"); e.className="empty"; e.textContent=t("noResults"); col.appendChild(e); }
+    list.forEach(c=>{
+      const d = document.createElement("div"); d.className="card";
+      d.style.borderLeftColor = STAGE_COLOR[st];
+      d.innerHTML = '<div class="nm">'+esc(c.name||"—")+'</div>' +
+        (c.prop?'<div class="pr">'+esc(c.prop)+'</div>':"") +
+        (c.value?'<div class="vl">'+mxn(c.value)+'</div>':"") +
+        (c.phone?'<div class="ph">📞 <a href="tel:'+esc(c.phone.replace(/\s/g,""))+'">'+esc(c.phone)+'</a></div>':"");
+      d.addEventListener("click", ev=>{ if(ev.target.tagName!=="A") openForm(c); });
+      col.appendChild(d);
+    });
+    board.appendChild(col);
+  });
+}
+
+function openForm(c){
+  document.getElementById("formTitle").textContent = c ? t("editClient") : t("newClient");
+  document.getElementById("fId").value = c?c.id:"";
+  document.getElementById("fName").value = c?c.name:"";
+  document.getElementById("fPhone").value = c?c.phone:"";
+  document.getElementById("fEmail").value = c?c.email:"";
+  document.getElementById("fProp").value = c?c.prop:"";
+  document.getElementById("fStage2").value = c?c.stage:"lead";
+  document.getElementById("fValue").value = c?(c.value||""):"";
+  document.getElementById("fNotes").value = c?c.notes:"";
+  document.getElementById("btnDel").style.display = c?"block":"none";
+  document.getElementById("scrim").classList.add("open");
+  setTimeout(()=>document.getElementById("fName").focus(),80);
+}
+function closeForm(){ document.getElementById("scrim").classList.remove("open"); }
+
+document.getElementById("btnAdd").addEventListener("click", ()=>openForm(null));
+document.getElementById("btnCancel").addEventListener("click", closeForm);
+document.getElementById("scrim").addEventListener("click", e=>{ if(e.target.id==="scrim") closeForm(); });
+document.getElementById("btnSave").addEventListener("click", ()=>{
+  const id = document.getElementById("fId").value;
+  const data = {
+    name:document.getElementById("fName").value.trim(),
+    phone:document.getElementById("fPhone").value.trim(),
+    email:document.getElementById("fEmail").value.trim(),
+    prop:document.getElementById("fProp").value.trim(),
+    stage:document.getElementById("fStage2").value,
+    value:parseFloat(document.getElementById("fValue").value)||0,
+    notes:document.getElementById("fNotes").value.trim()
+  };
+  if(!data.name){ document.getElementById("fName").focus(); return; }
+  if(id){ const c = S.clients.find(x=>x.id===id); if(c) Object.assign(c, data); }
+  else { S.clients.unshift(Object.assign({id:uid(), added:new Date().toISOString().slice(0,10)}, data)); }
+  save(); closeForm(); render();
+});
+document.getElementById("btnDel").addEventListener("click", ()=>{
+  const id = document.getElementById("fId").value;
+  if(id && confirm(t("confirmDel"))){ S.clients = S.clients.filter(x=>x.id!==id); save(); closeForm(); render(); }
+});
+document.getElementById("btnCsv").addEventListener("click", ()=>{
+  const head = ["name","phone","email","property","stage","value_mxn","notes","added"];
+  const q2 = v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows = S.clients.map(c=>[c.name,c.phone,c.email,c.prop,stageName(c.stage),c.value||0,c.notes,c.added||""].map(q2).join(","));
+  const csv = head.join(",")+"\n"+rows.join("\n");
+  const blob = new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "cg-clientes-"+new Date().toISOString().slice(0,10)+".csv";
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+});
+document.getElementById("q").addEventListener("input", render);
+document.getElementById("fStage").addEventListener("change", render);
+document.getElementById("langEs").addEventListener("click", ()=>{ S.lang="es"; save(); applyLang(); render(); });
+document.getElementById("langEn").addEventListener("click", ()=>{ S.lang="en"; save(); applyLang(); render(); });
+
+load(); applyLang(); render();
+</script>
+</body>
+</html>
