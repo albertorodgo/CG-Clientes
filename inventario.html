@@ -53,7 +53,7 @@ function card(h, hist){
  var img = (!hist && h.foto && IMGS[h.foto]) ? '<div class="foto"><img src="'+IMGS[h.foto]+'" loading="lazy"></div>' : '';
  var wa = 'https://wa.me/528341213030?text='+encodeURIComponent('Hola, me interesa esta propiedad de CG Bienes Raíces: '+h.titulo+' ('+h.precio_txt+'). ¿Me das más información?');
  var wabtn = '<a class="btn wa" target="_blank" href="'+wa+'">📲 WhatsApp</a>';
- var sharebtn = h.url ? '<button class="btn share" onclick="copiarLink(''+h.url.replace(/'/g,"\'")+'',this)">🔗 Copiar link</button>' : '';
+ var sharebtn = h.url ? '<button class="btn share" data-url="'+h.url+'" onclick="copiarLink(this)">🔗 Copiar link</button>' : '';
  return '<div class="card" data-op="'+h.op+'" data-tipo="'+h.tipo+'" data-q="'+(h.titulo+' '+h.specs+' '+h.precio_txt).toLowerCase()+'">'
  +img+'<div class="t">'+h.titulo+'</div><div class="p">'+h.precio_txt+'</div>'
  +'<div class="s">'+h.specs+'</div>'
@@ -61,7 +61,8 @@ function card(h, hist){
  +'<div class="f btns">'+wabtn+sharebtn+'</div>'
  +'<div class="f">'+(h.fecha?'<span>'+h.fecha+'</span>':'<span></span>')+link+'</div></div>';
 }
-function copiarLink(url, btn){
+function copiarLink(btn){
+ var url = btn.getAttribute('data-url');
  if(navigator.share){navigator.share({url:url}).catch(function(){});return;}
  navigator.clipboard.writeText(url).then(function(){
   var t=btn.textContent;btn.textContent='✓ Copiado';setTimeout(function(){btn.textContent=t;},1500);
