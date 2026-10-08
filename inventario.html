@@ -28,8 +28,8 @@ a.btn{font-size:12px;color:#0d2b4e;text-decoration:none;font-weight:600}
 <header><h1>CG Bienes Raíces · Catálogo de propiedades</h1>
 <p>Ciudad Victoria, Tamps · Informes: 834 121 3030</p></header>
 <div class="tabs">
-<button id="t1" class="act" onclick="show('p')">Propiedades destacadas</button>
-<button id="t2" onclick="show('h')">Histórico por confirmar</button>
+<button id="t1" class="act" onclick="show('p')">Propiedades destacadas (<span id="c-p"></span>)</button>
+<button id="t2" onclick="show('h')">Histórico por confirmar (<span id="c-h"></span>)</button>
 </div>
 <div class="bar">
 <input id="q" placeholder="Buscar…" oninput="filtrar()">
@@ -53,6 +53,8 @@ function card(h, hist){
 function render(){
  document.getElementById('g-p').innerHTML = P.map(function(h){return card(h,false)}).join('');
  document.getElementById('g-h').innerHTML = H.map(function(h){return card(h,true)}).join('');
+ document.getElementById('c-p').textContent = P.length;
+ document.getElementById('c-h').textContent = H.length;
 }
 function show(s){
  document.getElementById('sec-p').classList.toggle('act', s=='p');
