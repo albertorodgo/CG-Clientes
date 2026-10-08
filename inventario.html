@@ -50,7 +50,8 @@ var P=[{"titulo": "Casa con acabados de lujo", "precio_txt": "$6,800,000", "spec
 function card(h, hist){
  var link = h.url ? '<a class="btn" href="'+h.url+'" target="_blank">Ver publicación →</a>' : '';
  var b = hist ? '<span class="badge">Por confirmar</span>' : '<span class="badge ok">Verificada</span>';
- var img = (!hist && h.foto && IMGS[h.foto]) ? '<div class="foto"><img src="'+IMGS[h.foto]+'" loading="lazy"></div>' : '';
+ var imgSrc = (!hist && h.foto && IMGS[h.foto]) ? IMGS[h.foto] : IMGS['logo'];
+ var img = '<div class="foto"><img src="'+imgSrc+'" loading="lazy" alt=""></div>';
  var wa = 'https://wa.me/528341213030?text='+encodeURIComponent('Hola, me interesa esta propiedad de CG Bienes Raíces: '+h.titulo+' ('+h.precio_txt+'). ¿Me das más información?');
  var wabtn = '<a class="btn wa" target="_blank" href="'+wa+'">📲 WhatsApp</a>';
  var sharebtn = h.url ? '<button class="btn share" data-url="'+h.url+'" onclick="copiarLink(this)">🔗 Copiar link</button>' : '';
